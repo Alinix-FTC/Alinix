@@ -50,38 +50,6 @@ const Sponsors = () => (
             </a>
           </td>
         </tr>
-        <tr className="h-56">
-          <td className="border-2 border-gray-300 p-3">
-            <a href="https://launch.arcjet.com/Q6eLbRE" target="_blank">
-              <Image
-                src="/assets/images/arcjet-light.svg"
-                alt="Arcjet"
-                width={260}
-                height={224}
-              />
-            </a>
-          </td>
-          <td className="border-2 border-gray-300 p-3">
-            <a href="https://l.crowdin.com/next-js" target="_blank">
-              <Image
-                src="/assets/images/crowdin-dark.png"
-                alt="Better Stack"
-                width={260}
-                height={224}
-              />
-            </a>
-          </td>
-          <td className="border-2 border-gray-300 p-3">
-            <a href="https://nextjs-boilerplate.com/pro-saas-starter-kit">
-              <Image
-                src="/assets/images/nextjs-boilerplate-saas.png"
-                alt="Next.js Boilerplate SaaS"
-                width={260}
-                height={224}
-              />
-            </a>
-          </td>
-        </tr>
       </tbody>
     </table>
   </Section>
