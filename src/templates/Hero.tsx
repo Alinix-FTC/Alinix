@@ -24,7 +24,6 @@ const Hero = () => (
 
     <Section yPadding="pt-20 pb-20">
       <HeroOneButton
-        color="#82b0ab"
         title={
           <>
             {'Align - Create - Innovate\n'}
