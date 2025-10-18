@@ -25,9 +25,7 @@ const Hero = () => (
     <Section yPadding="pt-20 pb-20">
       <HeroOneButton
         title={
-          <>
-            {'Align - Create - Innovate\n'}
-          </>
+            'Align - Create - Innovate'
         }
         description="Understanding your purpose to build your ideas"
         button={
