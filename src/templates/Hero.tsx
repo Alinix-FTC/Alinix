@@ -24,9 +24,7 @@ const Hero = () => (
 
     <Section yPadding="pt-20 pb-20">
       <HeroOneButton
-      title={
-      <span className="text-[#004d66]">Align - Create - Innovate</span>
-    }
+      title="Align - Create - Innovate"
       description="Understanding your purpose to build your ideas"
       button={
         <Link href="https://creativedesignsguru.com/category/nextjs/">
