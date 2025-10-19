@@ -8,7 +8,7 @@ import { NavbarTwoColumns } from '../navigation/NavbarTwoColumns';
 import { Logo } from './Logo';
 
 const Hero = () => (
-  <Background color="bg-#c9c484ff-100">
+  <Background color="bg-AntiqueWhite-100">
     <Section yPadding="py-6">
       <NavbarTwoColumns logo={<Logo xl />}>
         <li>
@@ -25,7 +25,7 @@ const Hero = () => (
     <Section yPadding="pt-20 pb-20">
       <HeroOneButton
       title={
-      <span className="text-#004d66-600">Align - Create - Innovate</span>
+      <span className="text-[#004d66]">Align - Create - Innovate</span>
     }
       description="Understanding your purpose to build your ideas"
       button={
