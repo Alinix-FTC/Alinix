@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alinix — Align. Create. Innovate.</title>
+<meta name="description" content="Alinix — Align. Create. Innovate. Get in touch.">
+<link rel="icon" type="image/png" href="assets/alinix-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fs: clamp(22px, 5.5vw, 58px);
+    --p: -8%;               /* scan position */
+    --scan-opacity: 0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #05050a;
+    overflow: hidden;
+    font-family: 'Montserrat', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- ambient background (xbox-wallpaper style, alinix palette) ---------- */
+  #glow {
+    position: fixed; inset: 0;
+    opacity: 0;
+    transition: opacity 2.4s ease;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 44%, rgba(94, 60, 226, 0.30), transparent 65%),
+      radial-gradient(ellipse 45% 35% at 62% 30%, rgba(59, 92, 230, 0.14), transparent 60%),
+      radial-gradient(ellipse 70% 28% at 50% 108%, rgba(186, 44, 190, 0.22), transparent 62%),
+      radial-gradient(ellipse 120% 90% at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+  #glow.on { opacity: 1; }
+
+  /* ---------- boot flare (mac-style power-on bloom) ---------- */
+  #flare {
+    position: fixed; inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 55% 40% at 50% 46%,
+      rgba(220, 210, 255, 0.85), rgba(120, 78, 240, 0.45) 40%, transparent 70%);
+  }
+  #flare.boot { animation: boot 2s ease-out forwards; }
+  @keyframes boot {
+    0%   { opacity: 0; transform: scale(0.55); }
+    45%  { opacity: 0.9; transform: scale(1.05); }
+    100% { opacity: 0; transform: scale(1.35); }
+  }
+
+  /* ---------- the mark: fixed at centre, slides left for the final lockup ---------- */
+  #markwrap {
+    position: fixed; left: 50%; top: 50%;
+    font-size: var(--fs);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+    filter: blur(10px);
+  }
+  #markwrap.in {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    filter: blur(0);
+    transition: opacity 1.4s ease, transform 1.4s ease, filter 1.4s ease;
+  }
+  #markwrap img {
+    display: block;
+    height: 2.8em;
+    width: auto;
+    filter: drop-shadow(0 0 28px rgba(110, 60, 235, 0.45));
+  }
+
+  /* ---------- word text layers, positioned around the fixed mark ---------- */
+  .layer {
+    position: fixed; inset: 0;
+    font-size: var(--fs);
+    visibility: hidden;
+    pointer-events: none;
+  }
+  /* clip-right: visible to the LEFT of the scan bar; clip-left: visible to the RIGHT */
+  .layer.clip-right { visibility: visible; clip-path: inset(0 calc(100% - var(--p)) 0 0); }
+  .layer.clip-left  { visibility: visible; clip-path: inset(0 0 0 var(--p)); }
+  .layer.shown      { visibility: visible; clip-path: none; }
+
+  .layer span {
+    position: absolute; top: 50%;
+    white-space: nowrap;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    transform: translateY(calc(-50% + 0.16em));
+    background: linear-gradient(95deg, #4a43e0, #5b2fd8 55%, #7b2ee0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 42px rgba(100, 55, 230, 0.35);
+  }
+  /* mark is 2.8em tall, aspect 340:298 → half-width ≈ 1.6em; gap ≈ 0.45em      */
+  /* pre side subtracts the trailing letter-spacing so both gaps match visually */
+  .layer .pre  { right: calc(50% + 1.87em); }
+  .layer .post { left:  calc(50% + 2.05em); }
+
+  /* final LINIX: letters reveal one by one; gradient spans the whole word */
+  #linix { background: none; }
+  #linix .ltr {
+    position: static;
+    transform: none;
+    opacity: 0;
+    filter: blur(8px);
+    transition: opacity 0.45s ease, filter 0.45s ease;
+  }
+  #linix .ltr.in { opacity: 1; filter: blur(0); }
+
+  /* ---------- scan bar / lens flare ---------- */
+  #scanbar {
+    position: fixed; top: 36vh; bottom: 36vh;   /* only spans the logo/word band */
+    left: var(--p);
+    width: 2px;
+    opacity: var(--scan-opacity);
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+      transparent 8%, rgba(235, 228, 255, 0.9) 45%,
+      rgba(235, 228, 255, 0.9) 55%, transparent 92%);
+    box-shadow:
+      0 0 14px 2px rgba(190, 160, 255, 0.75),
+      0 0 60px 14px rgba(120, 70, 240, 0.45),
+      0 0 140px 40px rgba(150, 60, 220, 0.25);
+  }
+  #scanbar::after {              /* travelling lens-flare core */
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    width: 240px; height: 240px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle,
+      rgba(240, 235, 255, 0.55), rgba(140, 80, 245, 0.25) 35%, transparent 70%);
+  }
+
+  /* ---------- contact ---------- */
+  #contact {
+    position: fixed; left: 0; right: 0; bottom: 19vh;
+    padding: 0 24px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 1.6s ease, transform 1.6s ease;
+  }
+  @media (max-width: 640px) {
+    #contact { bottom: 29vh; }
+  }
+  #contact.in { opacity: 1; transform: translateY(0); }
+  #contact .tagline {
+    color: rgba(210, 200, 240, 0.55);
+    font-size: clamp(11px, 1.3vw, 14px);
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  #contact .emails {
+    display: flex; justify-content: center; gap: clamp(18px, 4vw, 48px);
+    flex-wrap: wrap;
+  }
+  #contact a {
+    color: rgba(235, 230, 255, 0.88);
+    font-size: clamp(13px, 1.6vw, 17px);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(140, 90, 240, 0.35);
+    padding-bottom: 3px;
+    transition: color 0.3s ease, border-color 0.3s ease, text-shadow 0.3s ease;
+  }
+  #contact a:hover {
+    color: #fff;
+    border-color: rgba(190, 140, 255, 0.9);
+    text-shadow: 0 0 18px rgba(150, 90, 250, 0.8);
+  }
+  #contact .signoff {
+    margin-top: 20px;
+    color: rgba(190, 180, 225, 0.38);
+    font-size: clamp(11px, 1.2vw, 13px);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+  }
+</style>
+</head>
+<body>
+
+<div id="glow"></div>
+<div id="flare"></div>
+
+<div class="layer" id="layerA"></div>
+<div class="layer" id="layerB"></div>
+<div class="layer" id="finalWord"><span class="post" id="linix"></span></div>
+
+<div id="markwrap"><img src="assets/alinix-mark.png" alt="Alinix"></div>
+
+<div id="scanbar"></div>
+
+<div id="contact">
+  <div class="tagline">Get in touch</div>
+  <div class="emails">
+    <a href="mailto:cameron@alinix.com.au">cameron@alinix.com.au</a>
+    <a href="mailto:marcus@alinix.com.au">marcus@alinix.com.au</a>
+  </div>
+  <div class="signoff">Looking forward to working with you.</div>
+</div>
+
+<script>
+(() => {
+  // the mark stays fixed at page centre as the "A"; only the letters change.
+  // ALINIX is handled separately: the mark slides left, then LINIX types on.
+  const WORDS = [
+    { pre: '',      post: 'LIGN' },    // Align
+    { pre: 'CRE',   post: 'TE'   },    // Create
+    { pre: 'INNOV', post: 'TE'   },    // Innovate
+  ];
+  const MARK_ASPECT = 340 / 298;       // trimmed logo width : height
+  const MARK_H = 2.8;                  // em
+  const GAP = 0.45;                    // em
+  const TRACK = 0.18;                  // em, letter-spacing
+
+  const root  = document.documentElement;
+  const glow  = document.getElementById('glow');
+  const flare = document.getElementById('flare');
+  const mark  = document.getElementById('markwrap');
+  const A     = document.getElementById('layerA');
+  const B     = document.getElementById('layerB');
+  const finalWord = document.getElementById('finalWord');
+  const linix = document.getElementById('linix');
+  const contact = document.getElementById('contact');
+  let layers = [A, B];
+  let skipped = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let finalDone = false;
+  const watchers = [];
+
+  function render(layer, word) {
+    layer.innerHTML = '';
+    if (word.pre) {
+      const s = document.createElement('span');
+      s.className = 'pre';
+      s.textContent = word.pre;
+      layer.appendChild(s);
+    }
+    if (word.post) {
+      const s = document.createElement('span');
+      s.className = 'post';
+      s.textContent = word.post;
+      layer.appendChild(s);
+    }
+  }
+
+  const sleep = ms => new Promise(r => {
+    if (skipped) return r();
+    const t = setTimeout(r, ms);
+    watchers.push(() => { clearTimeout(t); r(); });
+  });
+
+  // dir: +1 sweeps left→right, -1 sweeps right→left
+  function animateScan(duration, dir) {
+    const from = dir > 0 ? -8 : 108;
+    const to   = dir > 0 ? 108 : -8;
+    return new Promise(resolve => {
+      if (skipped) { root.style.setProperty('--p', to + '%'); return resolve(); }
+      const t0 = performance.now();
+      root.style.setProperty('--scan-opacity', '1');
+      function frame(now) {
+        if (skipped) {
+          root.style.setProperty('--p', to + '%');
+          root.style.setProperty('--scan-opacity', '0');
+          return resolve();
+        }
+        let t = Math.min((now - t0) / duration, 1);
+        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // easeInOutQuad
+        root.style.setProperty('--p', (from + e * (to - from)) + '%');
+        if (t < 1) requestAnimationFrame(frame);
+        else { root.style.setProperty('--scan-opacity', '0'); resolve(); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  async function reveal(word, dir) {
+    const [oldL, newL] = layers;
+    render(newL, word);
+    root.style.setProperty('--p', (dir > 0 ? -8 : 108) + '%');
+    oldL.classList.remove('shown');
+    if (dir > 0) {               // bar moves right: revealed area grows on the left
+      newL.classList.add('clip-right');
+      oldL.classList.add('clip-left');
+    } else {                     // bar moves left: revealed area grows on the right
+      newL.classList.add('clip-left');
+      oldL.classList.add('clip-right');
+    }
+    await animateScan(1400, dir);
+    newL.className = 'layer shown';
+    oldL.className = 'layer';
+    layers = [newL, oldL];
+  }
+
+  // sweep that only erases the current word, revealing nothing
+  async function wipeOut(dir) {
+    const oldL = layers[0];
+    root.style.setProperty('--p', (dir > 0 ? -8 : 108) + '%');
+    oldL.classList.remove('shown');
+    oldL.classList.add(dir > 0 ? 'clip-left' : 'clip-right');
+    await animateScan(1400, dir);
+    oldL.className = 'layer';
+    oldL.innerHTML = '';
+  }
+
+  /* ---- final lockup: A slides left, LINIX types on, whole thing centred ---- */
+
+  function computeFinal() {
+    if (!linix.childElementCount) {
+      'LINIX'.split('').forEach(ch => {
+        const s = document.createElement('span');
+        s.className = 'ltr';
+        s.textContent = ch;
+        linix.appendChild(s);
+      });
+    }
+    const fs = parseFloat(getComputedStyle(linix).fontSize);
+    const markW = MARK_H * MARK_ASPECT * fs;
+    const gap = GAP * fs;
+    const fullW = linix.getBoundingClientRect().width;   // includes trailing tracking
+    const textW = fullW - TRACK * fs;                    // visual width of LINIX
+    const shift = (gap + textW) / 2;                     // how far the mark moves left
+    linix.style.left = 'calc(50% + ' + (markW / 2 + gap - shift) + 'px)';
+    // one continuous gradient across the whole word, sliced per letter
+    linix.querySelectorAll('.ltr').forEach(s => {
+      s.style.backgroundSize = fullW + 'px 100%';
+      s.style.backgroundPosition = -s.offsetLeft + 'px 0';
+    });
+    return shift;
+  }
+
+  function slideMark(instant) {
+    const shift = computeFinal();
+    const tf = 'translate(calc(-50% - ' + shift + 'px), -50%) scale(1)';
+    if (instant || skipped) {
+      mark.style.transition = 'none';
+      mark.style.transform = tf;
+      void mark.offsetWidth;
+      mark.style.transition = '';
+      return Promise.resolve();
+    }
+    mark.style.transition = 'transform 1.3s cubic-bezier(0.65, 0, 0.35, 1)';
+    mark.style.transform = tf;
+    return sleep(1350);
+  }
+
+  async function revealLinix() {
+    finalWord.className = 'layer shown';
+    for (const s of linix.querySelectorAll('.ltr')) {
+      s.classList.add('in');
+      await sleep(170);
+    }
+    await sleep(300);            // let the last letter finish fading
+  }
+
+  function finish() {
+    skipped = true;
+    watchers.forEach(w => w());
+  }
+  addEventListener('click', finish, { once: true });
+
+  function finalState() {
+    layers.forEach(l => { l.className = 'layer'; l.innerHTML = ''; });
+    glow.classList.add('on');
+    mark.classList.add('in');
+    slideMark(true);
+    finalWord.className = 'layer shown';
+    linix.querySelectorAll('.ltr').forEach(s => s.classList.add('in'));
+    contact.classList.add('in');
+    finalDone = true;
+  }
+
+  addEventListener('resize', () => { if (finalDone) slideMark(true); });
+
+  async function run() {
+    await sleep(400);
+
+    // power-on flare + ambient glow; contact stays visible throughout
+    flare.classList.add('boot');
+    glow.classList.add('on');
+    contact.classList.add('in');
+    await sleep(900);
+
+    // logo fades in, hangs alone
+    mark.classList.add('in');
+    await sleep(1400);
+    await sleep(2600);                 // hang on the logo
+
+    // scan-reveal each word, sweeping back and forth
+    for (let i = 0; i < WORDS.length; i++) {
+      await reveal(WORDS[i], i % 2 === 0 ? 1 : -1);
+      await sleep(2000);
+    }
+
+    // final sweep back: just erase INNOVATE
+    await wipeOut(-1);
+    await sleep(350);                  // laser off screen, logo alone
+
+    // A glides left, LINIX types on letter by letter, lockup ends centred
+    await slideMark(false);
+    await sleep(250);
+    await revealLinix();
+    finalDone = true;
+
+    if (skipped) finalState();
+  }
+  run();
+})();
+</script>
+
+</body>
+</html>
